@@ -5,6 +5,19 @@
     <LangVersion>preview</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <Version>1.0.0</Version>
+    <Authors>Sewer56</Authors>
+    <Description>Library for reading ADX-ID3, a modified version of CRI Middleware's ADX Audio format with ID3 Tagging Support.</Description>
+    <PackageProjectUrl>https://github.com/Sewer56/ADX-ID3</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/Sewer56/ADX-ID3</RepositoryUrl>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>
