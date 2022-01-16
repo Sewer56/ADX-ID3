@@ -58,13 +58,16 @@ Disc No: 1
 
 ### Copy ID3 Metadata of a music file (ADX or non-ADX) to an ADX file
 
-(Output file can be omitted or specifically set with `--destination`).
-
 ```
 dotnet Sewer56.Adx.Id3.Tool.dll copy --source "Digital Circuit.flac" --sourceadx "Digital Circuit.adx"
 ```
 
-*This would add the ID3 metadata from `Digital Circuit.flac` to `Digital Circuit.adx`
+*This would add the ID3 metadata from `Digital Circuit.flac` to `Digital Circuit.adx`.  
+Output file can also be specifically overwritten with `--destination`.
+
+----
+
+Note: There is currently no standalone ADX ID3 Tag editor. Please edit another music track (any music track) using your preferred tag editor (like [Mp3Tag](https://www.mp3tag.de/en/)) and copy the tag using the commandline tool.
 
 ## Library Usage Guide
 
