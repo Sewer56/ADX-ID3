@@ -1,0 +1,21 @@
+{
+  "profiles": {
+    "WSL": {
+      "commandName": "WSL2",
+      "environmentVariables": {},
+      "distributionName": ""
+    },
+    "Tool: View File": {
+      "commandName": "Project",
+      "commandLineArgs": "view --source \"C:\\Users\\sewer\\Music\\Sonic OST\\Disc 1\\44 Digital Circuit (original version) - 瀬上純.flac\" "
+    },
+    "Tool: Copy File": {
+      "commandName": "Project",
+      "commandLineArgs": "copy --source \"C:\\Users\\sewer\\Music\\Sonic OST\\Disc 1\\44 Digital Circuit (original version) - 瀬上純.flac\" --sourceadx \"C:\\Users\\sewer\\Desktop\\Temp\\AdxTest\\Version3_Loop.adx\" --destination \"C:\\Users\\sewer\\Desktop\\Temp\\AdxTest\\Version3_Loop_out.adx\""
+    },
+    "Tool: ADX to ADX Copy": {
+      "commandName": "Project",
+      "commandLineArgs": "copy --source \"C:\\Users\\sewer\\Desktop\\Temp\\AdxTest\\Version3_Loop_out.adx\" --sourceadx \"C:\\Users\\sewer\\Desktop\\Temp\\AdxTest\\Version3_Loop_out.adx\" --destination \"C:\\Users\\sewer\\Desktop\\Temp\\AdxTest\\AdxToAdx\\Version3_Loop_out.adx\""
+    }
+  }
+}

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sewer56.Adx.Id3", "Sewer56.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sewer56.Adx.Id3.Tests", "Sewer56.Adx.Id3.Tests\Sewer56.Adx.Id3.Tests.csproj", "{3E60F98B-495E-4393-A56D-99920CDEDCE9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sewer56.Adx.Id3.Tool", "Sewer56.Adx.Id3.Tool\Sewer56.Adx.Id3.Tool.csproj", "{C54F0A85-BB39-4E89-BF5C-43A507C18DE9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{3E60F98B-495E-4393-A56D-99920CDEDCE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3E60F98B-495E-4393-A56D-99920CDEDCE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3E60F98B-495E-4393-A56D-99920CDEDCE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C54F0A85-BB39-4E89-BF5C-43A507C18DE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C54F0A85-BB39-4E89-BF5C-43A507C18DE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C54F0A85-BB39-4E89-BF5C-43A507C18DE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C54F0A85-BB39-4E89-BF5C-43A507C18DE9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

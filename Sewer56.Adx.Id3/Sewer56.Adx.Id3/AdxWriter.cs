@@ -12,6 +12,11 @@ namespace Sewer56.Adx.Id3;
 /// </summary>
 public static unsafe class AdxWriter
 {
+    /// <summary>
+    /// Sector alignment for CD-ROMs.
+    /// </summary>
+    public const int DiscSectorAlignment = 2048;
+    
     private const int DummyLoopMaxBytes = 1080; // 1064: Max possible header size (V4 with 255 channels). Added extra just in case.
 
     /// <summary>
@@ -127,19 +132,18 @@ public static unsafe class AdxWriter
     /// <param name="baseHeaderSize">Size of the pre-existing ADX header.</param>
     private static int CalculateAlignmentBytes(byte* adxData, int baseHeaderSize)
     {
-        const int discSectorAlignment = 2048;
         var adxHeader = (AdxCommonHeader*) adxData;
         var data      = GetAlignmentBytesData(adxData);
 
         // Start loop frame offset should be a multiple of 0x800
         int startLoopOffset = SampleCountToByteCount(data.LoopStartSample, adxHeader->FrameSize) * adxHeader->ChannelCount + baseHeaderSize + 4;
-        var alignmentBytes  = GetNextMultiple(startLoopOffset, discSectorAlignment) - startLoopOffset;
+        var alignmentBytes  = GetNextMultiple(startLoopOffset, DiscSectorAlignment) - startLoopOffset;
 
         //Version 3 pushes the loop start one block back for every full frame of alignment samples 
         if (adxHeader->Version == 3)
         {
             var samplesPerFrame  = (adxHeader->FrameSize - 2) * 2;
-            alignmentBytes += data.AlignmentSamples / samplesPerFrame * discSectorAlignment;
+            alignmentBytes += data.AlignmentSamples / samplesPerFrame * DiscSectorAlignment;
         }
 
         return alignmentBytes;
