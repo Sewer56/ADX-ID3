@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Sewer56.Adx.Id3.Exceptions;
 using Standart.Hash.xxHash;
 using Xunit;
 
@@ -38,39 +39,45 @@ public class AdxWriterTests
     [Fact]
     public void WriteAdx_WithEmptyStream_ThrowsInsufficientDataException()
     {
-        throw new NotImplementedException();
+        using var adxStream = new MemoryStream();
+        using var outputStream = new MemoryStream();
+
+        Assert.Throws<InsufficientDataException>(() => AdxWriter.WriteAdx(adxStream, outputStream, Span<byte>.Empty));
     }
 
     [Fact]
     public void WriteAdx_WithNonAdxStream_ThrowsNotAnAdxException()
     {
-        throw new NotImplementedException();
+        using var adxStream = new MemoryStream();
+        adxStream.Write(new byte[] { 0x7F, 0x00, 0x00 });
+        adxStream.Position = 0;
+
+        using var outputStream = new MemoryStream();
+        Assert.Throws<NotAnAdxException>(() => AdxWriter.WriteAdx(adxStream, outputStream, Span<byte>.Empty));
     }
 
     [Fact]
     public void WriteAdx_WithMissingHeaderSizeStream_ThrowsInsufficientDataException()
     {
-        throw new NotImplementedException();
+        using var adxStream = new MemoryStream();
+        adxStream.Write(new byte[] { 0x80, 0x00 });
+        adxStream.Position = 0;
+
+        using var outputStream = new MemoryStream();
+
+        Assert.Throws<InsufficientDataException>(() => AdxWriter.WriteAdx(adxStream, outputStream, Span<byte>.Empty));
     }
 
     [Fact]
     public void WriteAdx_WithMissingHeaderStream_ThrowsInsufficientDataException()
     {
-        throw new NotImplementedException();
+        using var adxStream = new MemoryStream();
+        adxStream.Write(new byte[] { 0x80, 0x00, 0x00, 0xFF });
+        adxStream.Position = 0;
+
+        using var outputStream = new MemoryStream();
+
+        Assert.Throws<InsufficientDataException>(() => AdxWriter.WriteAdx(adxStream, outputStream, Span<byte>.Empty));
     }
     #endregion Exceptions: Stream Overload
-
-    #region Exceptions: Data Ptr Overload
-    [Fact]
-    public void WriteAdx_WithNonAdxData_ThrowsNotAnAdxException()
-    {
-        throw new NotImplementedException();
-    }
-
-    [Fact]
-    public void WriteAdx_WithMissingAdxData_ThrowsInsufficientDataException()
-    {
-        throw new NotImplementedException();
-    }
-    #endregion Exceptions: Data Ptr Overload
 }
