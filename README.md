@@ -14,6 +14,87 @@ That is, files where the version field (0x12) in the file has the value `03` or 
 
 There reportedly exists a version `05`, however I haven't seen an ADX file implement this variant of the format.  
 
+## CLI Usage Guide
+
+### Get Help
+```
+dotnet Sewer56.Adx.Id3.Tool.dll --help
+dotnet Sewer56.Adx.Id3.Tool.dll view --help
+dotnet Sewer56.Adx.Id3.Tool.dll copy --help
+```
+
+***Sample Output***
+
+```
+Sewer56.Adx.Id3.Tool 1.0.0
+Created by Sewer56, licensed under MIT License
+
+ERROR(S):
+  No verb selected.
+
+  view    Reads a file and prints contents of the id3 tag. Supports ADX and some
+          other formats.
+
+  copy    Copies an id3 tag from a non-ADX file to an ADX file.
+```
+
+### View ID3 Metadata of an music file (ADX or non-ADX)
+
+```
+dotnet Sewer56.Adx.Id3.Tool.dll view --source "Digital Circuit.flac" 
+```
+
+***Sample Output***
+
+```
+Title: Digital Circuit (original version)
+Artist(s): 瀬上純
+Album: Shadow the Hedgehog: Original Soundtrax
+Year: 2006
+Genre(s): Soundtrack
+Track: 44
+Disc No: 1
+```
+
+### Copy ID3 Metadata of a music file (ADX or non-ADX) to an ADX file
+
+(Output file can be omitted or specifically set with `--destination`).
+
+```
+dotnet Sewer56.Adx.Id3.Tool.dll copy --source "Digital Circuit.flac" --sourceadx "Digital Circuit.adx"
+```
+
+*This would add the ID3 metadata from `Digital Circuit.flac` to `Digital Circuit.adx`
+
+## Library Usage Guide
+
+Some properties of the library:  
+- No Heap Allocations (outside of return value).  
+- No Dependencies.  
+- Minimal API/Code.  
+- Supports Non-Seekable Streams (Partial Web Downloads!).  
+
+This `~9KB` .NET library is optimised for speed and size.  
+
+### Read ID3 Tag from an ADX File
+
+```csharp
+using var fileStream = new FileStream("sample.adx", FileMode.Open);
+var id3 = AdxReader.GetId3Tag(fileStream);
+```
+
+Here `id3` is a byte array containing the ID3 tag. This array is null if no tag was found.
+
+### Write ID3 Tag to an ADX File
+
+Takes the stream in `input`, writes new file to the stream in `output`. 
+
+```csharp
+using var input  = new FileStream("sample.adx", FileMode.Open)
+using var output = new MemoryStream();
+AdxWriter.WriteAdx(input, output, id3);
+```
+
 ## Technical Specification
 
 ### Structure of an ADX-ID3 Header
@@ -55,6 +136,7 @@ struct AdxHeader
         End of original ADX header. 
         Potential ID3 header is contained here. 
     */
+    // ID3 id3Header;
 };
 
 struct AdxLoop
@@ -133,9 +215,10 @@ The following code defines how to get the offset of a potential ID3 header.
 
 ## Limitations
 
-ID3 Header can have max size of ~65380 bytes; due to a format limitation.
+ID3 Header can have max size of ~32700 bytes; due to a format limitation.  
+In practice, this limit is never reached as images in ADX-ID3 use [Attached Pictures](https://id3.org/id3v2.3.0#Attached_picture).
 
-As such, high quality images are not embeddable. Please use image link/URL as specified in `https://id3.org/id3v2.3.0#Attached_picture`.
+
 
 ## Future Improvements
 

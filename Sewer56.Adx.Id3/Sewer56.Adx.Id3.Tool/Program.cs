@@ -139,7 +139,7 @@ public class Program
     {
         var helpText = HelpText.AutoBuild(options, help =>
         {
-            help.Copyright = "Created by Sewer56, licensed under GNU LGPL V3";
+            help.Copyright = "Created by Sewer56, licensed under MIT License";
             help.AutoHelp = false;
             help.AutoVersion = false;
             help.AddDashesToOption = true;

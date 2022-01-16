@@ -16,6 +16,9 @@
     "Tool: ADX to ADX Copy": {
       "commandName": "Project",
       "commandLineArgs": "copy --source \"C:\\Users\\sewer\\Desktop\\Temp\\AdxTest\\Version3_Loop_out.adx\" --sourceadx \"C:\\Users\\sewer\\Desktop\\Temp\\AdxTest\\Version3_Loop_out.adx\" --destination \"C:\\Users\\sewer\\Desktop\\Temp\\AdxTest\\AdxToAdx\\Version3_Loop_out.adx\""
+    },
+    "No Params": {
+      "commandName": "Project"
     }
   }
 }
