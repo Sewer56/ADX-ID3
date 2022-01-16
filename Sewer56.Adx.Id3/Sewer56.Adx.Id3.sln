@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32104.313
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sewer56.Adx.Id3", "Sewer56.Adx.Id3\Sewer56.Adx.Id3.csproj", "{8DC4ABAE-77E3-4784-B302-0722DE4226FA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sewer56.Adx.Id3.Tests", "Sewer56.Adx.Id3.Tests\Sewer56.Adx.Id3.Tests.csproj", "{3E60F98B-495E-4393-A56D-99920CDEDCE9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8DC4ABAE-77E3-4784-B302-0722DE4226FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8DC4ABAE-77E3-4784-B302-0722DE4226FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8DC4ABAE-77E3-4784-B302-0722DE4226FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8DC4ABAE-77E3-4784-B302-0722DE4226FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E60F98B-495E-4393-A56D-99920CDEDCE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E60F98B-495E-4393-A56D-99920CDEDCE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E60F98B-495E-4393-A56D-99920CDEDCE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E60F98B-495E-4393-A56D-99920CDEDCE9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2A8E82BF-F89F-43DB-88E2-83C264A0930A}
+	EndGlobalSection
+EndGlobal
