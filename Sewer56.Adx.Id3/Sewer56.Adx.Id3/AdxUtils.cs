@@ -9,7 +9,30 @@ namespace Sewer56.Adx.Id3;
 /// </summary>
 public static unsafe class AdxUtils
 {
-    const int LoopStructSize = 20;
+    /// <summary>
+    /// Size of CRI ADX Loop Info.
+    /// </summary>
+    public const int LoopInfoSize = 24;
+
+    /// <summary>
+    /// Size of a CRI ADX Version 3 Base Header.
+    /// </summary>
+    public const int Version3BaseHeaderSize = 20;
+
+    /// <summary>
+    /// Size of a CRI ADX Version 4 Base Header.
+    /// </summary>
+    public const int Version4BaseHeaderSize = 32;
+
+    /// <summary>
+    /// Size of a CRI ADX Version 3 Full Header.
+    /// </summary>
+    public const int Version3FullHeaderSize = 44;
+
+    /// <summary>
+    /// Size of a CRI ADX Version 4 Full Header.
+    /// </summary>
+    public const int Version4FullHeaderSize = 56;
 
     /// <summary>
     /// Calculates the offset of an ID3 tag in an ADX file.
@@ -20,49 +43,18 @@ public static unsafe class AdxUtils
     /// <remarks>A return value of -1 with <paramref name="headerLength"/> of -1 indicates unsupported version.</remarks>
     public static int GetId3Tag_Offset(byte* adxData, out int headerLength)
     {
-        var header = (AdxCommonHeader*)adxData;
+        var header  = (AdxCommonHeader*)adxData;
         var version = header->Version;
-        byte* versionHeader = (byte*)(header + 1);  // Get version specific data.
-        int versionHeaderOffset = (int)((nint)versionHeader - (nint)adxData);
+        var versionHeaderSize = version == 4 ? Version4FullHeaderSize : Version3FullHeaderSize;
 
-        if (version == 3)
+        // No loop information (and no ID3 tag)
+        if (header->HeaderSize.AsBigEndian() < versionHeaderSize)
         {
-            // No loop information (and no ID3 tag)
-            if (versionHeaderOffset + LoopStructSize >= header->HeaderSize.AsBigEndian())
-            {
-                headerLength = versionHeaderOffset;
-                return -1;
-            }
-
-            var loopCount = (*(ushort*)(versionHeader + 2)).AsBigEndian(); // loopCount = 0x16 [short]
-            var loopBytes = loopCount * LoopStructSize;  // loopCount * 20
-
-            headerLength = 0x18 + loopBytes; // [0x18] Offset to first loop item.
-            return headerLength;
+            headerLength = version == 4 ? Version4BaseHeaderSize : Version3BaseHeaderSize;
+            return -1;
         }
 
-        if (version == 4)
-        {
-            var historySize = Math.Max(header->ChannelCount * 4, 8); // Size of extra sample history.
-            var postHistoryOffset = 4 + historySize; // (Padding + History). End of v4 non-looping header.
-
-            // No loop information (and no ID3 tag)
-            if (versionHeaderOffset + postHistoryOffset + LoopStructSize >= header->HeaderSize.AsBigEndian())
-            {
-                headerLength = versionHeaderOffset + postHistoryOffset;
-                return -1;
-            }
-
-            // Skip to loop count.
-            var loopCountOffset = postHistoryOffset + 2; // +AlignmentSamples[2]
-            var loopCount = (*(ushort*)(versionHeader + loopCountOffset)).AsBigEndian();
-            var loopBytes = loopCount * LoopStructSize; // loopCount * 20
-
-            headerLength = versionHeaderOffset + loopCountOffset + sizeof(short) + loopBytes;
-            return headerLength;
-        }
-
-        headerLength = -1;
-        return -1;
+        headerLength = versionHeaderSize;
+        return versionHeaderSize;
     }
 }

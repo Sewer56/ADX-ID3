@@ -16,18 +16,6 @@ public static unsafe class AdxWriter
     /// Sector alignment for CD-ROMs.
     /// </summary>
     public const int DiscSectorAlignment = 2048;
-    
-    private const int DummyLoopMaxBytes = 1080; // 1064: Max possible header size (V4 with 255 channels). Added extra just in case.
-
-    /// <summary>
-    /// Dummy Loop data for ADX V3.
-    /// </summary>
-    private static readonly byte[] DummyLoopDataV3 = new byte[]
-    {
-        0x00, 0x00, // Alignment Samples
-        0x00, 0x01, // Loop Count
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 // Dummy Loop
-    };
 
     /// <summary>
     /// Writes an ID3 tag to a given ADX file.
@@ -52,7 +40,7 @@ public static unsafe class AdxWriter
 
         // Allocate data for previous full ADX header and possible header extension.
         var headerSizeLe                = headerSize.AsBigEndian();
-        byte* origHeaderBytes           = stackalloc byte[headerSizeLe + DummyLoopMaxBytes];
+        byte* origHeaderBytes           = stackalloc byte[headerSizeLe + AdxUtils.LoopInfoSize];
         *(ushort*)(origHeaderBytes)     = magic;
         *(ushort*)(origHeaderBytes + 2) = headerSize;
 
@@ -69,8 +57,8 @@ public static unsafe class AdxWriter
                 ThrowHelpers.ThrowUnsupportedAdxVersion("Unsupported ADX version.");
 
             // Add dummy loop data.
-            DummyLoopDataV3.AsSpanFast().CopyTo(new Span<byte>(origHeaderBytes + adxHeaderSize, DummyLoopDataV3.Length));
-            extraHeaderSize = DummyLoopDataV3.Length;
+            new Span<byte>(origHeaderBytes + adxHeaderSize, AdxUtils.LoopInfoSize).Fill(0x00);
+            extraHeaderSize = AdxUtils.LoopInfoSize;
         }
 
         int alignmentBytes = CalculateAlignmentBytes(origHeaderBytes, adxHeaderSize + extraHeaderSize + data.Length);
@@ -78,7 +66,10 @@ public static unsafe class AdxWriter
         if (newHeaderSize > short.MaxValue)
             ThrowHelpers.ThrowOffsetTooBigException("Supplied data is too big. ADX header cannot fit.");
 
-        *(ushort*)(origHeaderBytes + 2) = ((ushort)newHeaderSize).AsBigEndian(); // Set new header size.
+        var headerSizeDifference = newHeaderSize - headerSizeLe;
+        * (ushort*)(origHeaderBytes + 2) = ((ushort)newHeaderSize).AsBigEndian(); // Set new header size.
+        if (headerSizeDifference > 0)
+            AdjustLoopStartByte(origHeaderBytes, headerSizeDifference);
 
         // Copy out header.
         outputStream.Write(new Span<byte>(origHeaderBytes, adxHeaderSize + extraHeaderSize)); // Rewrite Original ADX Header
@@ -88,7 +79,37 @@ public static unsafe class AdxWriter
         // Write out rest of file.
         adxStream.CopyTo(outputStream);
     }
-    
+
+    /// <summary>
+    /// Adjusts the loop start points for every loop in ADX header.
+    /// </summary>
+    /// <param name="adxData">Pointer to ADX data.</param>
+    /// <param name="offset">Offset to loop start byte.</param>
+    private static void AdjustLoopStartByte(byte* adxData, int offset)
+    {
+        var header  = (AdxCommonHeader*)adxData;
+        var version = header->Version;
+        var versionLoopOffset = version == 4 ? AdxUtils.Version4BaseHeaderSize : AdxUtils.Version3BaseHeaderSize;
+        AdjustOffsetForLoop(adxData + versionLoopOffset, offset);
+
+        static void AdjustOffsetForLoop(byte* versionHeaderPtr, int offset)
+        {
+            var loopEnabled = (*(ushort*)(versionHeaderPtr + 2)).AsBigEndian();
+            if (loopEnabled != 1) 
+                return;
+
+            var loopPtr = versionHeaderPtr + 4;
+            var loopStartByte = (*(int*)(loopPtr + 0x8)).AsBigEndian();
+            var loopEndByte = (*(int*)(loopPtr + 0x10)).AsBigEndian();
+
+            loopStartByte += offset;
+            loopEndByte += offset;
+
+            (*(int*)(loopPtr + 0x8)) = loopStartByte.AsBigEndian();
+            (*(int*)(loopPtr + 0x10)) = loopEndByte.AsBigEndian();
+        }
+    }
+
     /// <summary>
     /// Gets the data necessary for calculating alignment bytes.
     /// </summary>
@@ -96,20 +117,10 @@ public static unsafe class AdxWriter
     /// <returns>Raw ADX data.</returns>
     private static AlignmentBytesData GetAlignmentBytesData(byte* adxData)
     {
-        var header = (AdxCommonHeader*)adxData;
-        var version = header->Version;
-        const int versionHeaderOffset = 0x14;
-
-        if (version == 3)
-            return GetFromVersion3Header(adxData + versionHeaderOffset);
-
-        if (version == 4)
-        {
-            var historySize = Math.Max(header->ChannelCount * 4, 8); // Size of extra sample history.
-            var postHistoryOffset = 4 + historySize; // (Padding + History). End of v4 non-looping header.
-
-            return GetFromVersion3Header(adxData + versionHeaderOffset + postHistoryOffset);
-        }
+        var header            = (AdxCommonHeader*)adxData;
+        var version           = header->Version;
+        var versionLoopOffset = version == 4 ? AdxUtils.Version4BaseHeaderSize : AdxUtils.Version3BaseHeaderSize;
+        return GetFromVersion3Header(adxData + versionLoopOffset);
 
         static AlignmentBytesData GetFromVersion3Header(byte* versionHeaderPtr)
         {
@@ -119,8 +130,6 @@ public static unsafe class AdxWriter
                 LoopStartSample = (*(int*)(versionHeaderPtr + 0x8)).AsBigEndian()
             };
         }
-
-        return default;
     }
 
     /*

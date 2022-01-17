@@ -131,9 +131,8 @@ struct AdxHeader
         Remainder of ADX header below.
     */
     short AlignmentSamples;
-    short LoopCount;
-    for(i = 0; i < LoopCount; i++)
-        Loop loop;
+    short LoopEnabled;
+    Loop Loop;
 
     /* 
         End of original ADX header. 
@@ -144,7 +143,7 @@ struct AdxHeader
 
 struct AdxLoop
 {
-    short LoopNum;
+    short Unknown;
     short LoopType;
     int LoopStartSample;
     int LoopStartByte;
@@ -158,9 +157,7 @@ struct AdxLoop
 Some ADX files have no loops, which means that the ADX headers end prematurely.  
 This happens (as seen above) when the header has insufficient space to support a loop header/section.  
 
-In order to support loop-less files are converted to have 1 loop, which is zero'd out and thus ignored by the native player. 
-
-As such, `AdxHeader->LoopCount` is set to `1` and `Loop` struct is zero'd out. This is done in order to retain support for 3rd party tools working with ADXes that assume a loop count of 1.
+In order to support loop-less files, we simply extend the header to its full length, to the same size as if the header did have a loop. This is `44` bytes for Version 3 and `56` bytes for Version 4. This empty space is zero filled, as conveniently, the loop flag will be set to 0 and the remaining loop information will be ignored by the application.
 
 ### Where to Find the ID3 Header
 
@@ -168,6 +165,11 @@ The ID3 header is located after the standard ADX header and before the raw audio
 Its location varies with ADX version.  
 
 ```csharp
+// Version3BaseHeaderSize: 20
+// Version4BaseHeaderSize: 32
+// Version3FullHeaderSize: 44
+// Version4FullHeaderSize: 56
+
 // pAdx is a pointer to start of an ADX file.
 // Return Value: 
 //      -1 indicates no id3 tag.
@@ -175,42 +177,19 @@ Its location varies with ADX version.
 // Note: This is pseudocode, real file uses Big Endian and you'll probably need to account for that.
 int GetId3Offset(AdxHeader* pAdx) 
 {
-    var version = pAdx->Version;                        // Version = 0x12 [byte]
-    byte* versionHeader = &(pAdx->VersionHeaderStart);  // 0x14: Version specific data.
-    int versionHeaderOffset = versionHeader - pAdx;
+    var header  = (AdxCommonHeader*)pAdx;
+    var version = header->Version;
+    var versionHeaderSize = version == 4 ? Version4FullHeaderSize : Version3FullHeaderSize;
 
-    if (version == 3) 
+    // No loop information (and no ID3 tag)
+    if (header->HeaderSize.AsBigEndian() < versionHeaderSize)
     {
-        // No loop information (and no ID3 tag)
-        if (versionHeaderOffset + sizeof(AdxLoop) >= pAdx->HeaderSize)
-            return -1;
-
-        var loopCount = pAdx->LoopCountv3;           // loopCount = 0x16 [short]
-        var loopBytes = loopCount * sizeof(AdxLoop); // loopCount * 20
-
-        return offsetOf(pAdx->Loopv3) + loopBytes;   // loopv3 = [0x18] Offset to first loop item.
+        headerLength = version == 4 ? Version4BaseHeaderSize : Version3BaseHeaderSize;
+        return -1;
     }
 
-    if (version == 4) 
-    {
-        // channelCount = 0x07 [byte]
-        var historySize  = Math.Max(pAdx->ChannelCount * 4, 8); // Size of extra sample history.
-        var postHistoryOffset = 4 + historySize; // End of v4 non-looping header. +4 for unknown padding.
-
-        // No loop information (and no ID3 tag)
-        if (versionHeaderOffset + postHistoryOffset + sizeof(AdxLoop) >= pAdx->HeaderSize)
-            return -1;
-
-        // Skip to loop count.
-        var loopCountOffset = postHistoryOffset + 2;         // Padding + History + AlignmentSamples
-        var loopCount       = *(short*)(versionHeader + loopCountOffset);
-        var loopBytes       = loopCount * sizeof(AdxLoop);   // loopCount * 20
-
-        return versionHeaderOffset + loopCountOffset + sizeof(short) + loopBytes;
-    }
-
-    // Not Supported
-    return -1;
+    headerLength = versionHeaderSize;
+    return versionHeaderSize;
 }
 ```
 
@@ -220,8 +199,6 @@ The following code defines how to get the offset of a potential ID3 header.
 
 ID3 Header can have max size of ~32700 bytes; due to a format limitation.  
 In practice, this limit is never reached as images in ADX-ID3 use [Attached Pictures](https://id3.org/id3v2.3.0#Attached_picture).
-
-
 
 ## Future Improvements
 
