@@ -99,6 +99,7 @@ public class Program
         }
 
         // Create Tag
+        id3Tag.Flags |= HeaderFlags.FooterPresent;
         byte[] sourceTagBytes = id3Tag.Render().Data;
 
         // Make ADX with tag. 
