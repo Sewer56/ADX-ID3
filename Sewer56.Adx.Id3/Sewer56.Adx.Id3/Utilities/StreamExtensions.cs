@@ -33,7 +33,7 @@ public static class StreamExtensions
         int numBytesRead = 0;
         int numBytesToRead = result.Length;
 
-        do
+        while (numBytesToRead > 0)
         {
             int bytesRead = stream.Read(result.Slice(numBytesRead));
             if (bytesRead <= 0)
@@ -42,7 +42,6 @@ public static class StreamExtensions
             numBytesRead += bytesRead;
             numBytesToRead -= bytesRead;
         }
-        while (numBytesRead < numBytesToRead);
 
         return true;
     }
